@@ -51,12 +51,20 @@ repo_root/
 - `--iforest` (boolean): add Isolation Forest anomaly ranking
 - `--in_csv PATH` (string): input CSV path (default `data/sample_logins.csv`)
 - `--out_csv PATH` (string): output CSV path (default `data/alerts.csv`)
+- `--max_speed FLOAT` (default 900.0): impossible-travel threshold in km/h
+- `--sortby` {score,iforest_score} (default score): column used to sort preview/CSV
+- `--top INT` (default 10): how many rows to preview in terminal
 
 Examples:
-- `python -m src.login_scorer.cli --in_csv data/logins_week1.csv --out_csv data/alerts_week1.csv`
-- `python -m src.login_scorer.cli --iforest --out_csv data/alerts_with_ml.csv`
+- Rules only, default threshold:  
+  `python -m src.login_scorer.cli`
+- Stricter speed threshold:  
+  `python -m src.login_scorer.cli --max_speed 700`
+- Add ML and keep rules primary (IF acts as a tiebreaker inside the same rule score):  
+  `python -m src.login_scorer.cli --iforest`
+- Sort primarily by ML (demo):  
+  `python -m src.login_scorer.cli --iforest --sortby iforest_score --top 15`
 
----
 
 ## What it computes (features)
 
@@ -78,6 +86,8 @@ Notes: ASN = Autonomous System Number (network owner of an IP); UA = User-Agent 
 - Rare ASN: first-seen for user → +1 point (tag `rare_asn`)
 - Sum → `score` (higher = more suspicious)
 - `reason` lists the rule tags (e.g., `impossible_travel;device_mismatch`)
+
+**Sorting behaviour:** keep rules primary. With `--iforest`, the pipeline sorts by `score` and uses `iforest_score` as a **tiebreaker** among rows with the same rule score. (You can override with `--sortby iforest_score` for demo purposes.)
 
 ---
 
